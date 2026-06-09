@@ -93,50 +93,74 @@ def input_orderan():
         print(f"Total Gabungan Tagihan: Rp. {total_harga}")
         print("----------------------------------------")
         menu_lagi = str(input("Apakah ingin menginput orderan baru yang lain? (y/n): "))
+    input("Tekan Enter")
+    print("==========================================================================")
 
 # Mengubah Status
 def monitoring_status():
     # Kamus Data Lokal:
-    #	menu_lagi        : string (Kontrol perulangan untuk menu monitoring status)
-    #	id_valid         : boolean (Flag penanda validasi keberadaan ID transaksi)
-    #	cari_id          : string (ID transaksi target yang akan diubah statusnya)
-    #	pilihan_status   : integer (Angka pilihan status pengerjaan baru 1-3)
+    #   menu_lagi     : string (kontrol perulangan)
+    #   cari_input    : string (input ID atau Nama)
+    #   id_ditemukan  : string (menyimpan ID yang ditemukan setelah dicari)
+    
     menu_lagi = "y"
     while menu_lagi == "y" or menu_lagi == "Y":
         print("\n========================================")
         print("    CEK / UBAH STATUS CUCIAN (MONITOR)  ")
         print("========================================")
-        id_valid = False
-        while id_valid == False:
-            cari_id = str(input("Masukkan ID Transaksi (misal: TRX-001) atau ketik 'keluar': "))
-            if cari_id == "keluar" or cari_id == "Keluar":
-                return 
-            if cari_id in database_laundry:
-                id_valid = True
-            if cari_id not in database_laundry:
-                print("ID Transaksi tidak ditemukan! Coba periksa kembali typo kalian.")
-        print(f"\nNama Pelanggan : {database_laundry[cari_id]['nama']}")
-        print(f"Status Saat Ini: {database_laundry[cari_id]['status']}")
-        print("----------------------------------------")
-        print("Pilih Status Baru:")
-        print("1. Antrean")
-        print("2. Sedang Dicuci")
-        print("3. Siap Diambil")
-        pilihan_status = 0
-        while pilihan_status < 1 or pilihan_status > 3:
-            pilihan_status = int(input("Pilih (1-3): "))
-            if pilihan_status < 1 or pilihan_status > 3:
-                print("Pilihan status salah! Masukkan angka 1 sampai 3.")
-        if pilihan_status == 1:
-            database_laundry[cari_id]['status'] = "Antrean"
-        if pilihan_status == 2:
-            database_laundry[cari_id]['status'] = "Sedang Dicuci"
-        if pilihan_status == 3:
-            database_laundry[cari_id]['status'] = "Siap Diambil"
-            print(f"[NOTIFIKASI] SMS dikirim ke {database_laundry[cari_id]['no_hp']}: Halo {database_laundry[cari_id]['nama']}, cucian Anda dengan ID {cari_id} sudah SIAP DIAMBIL!")
-        print("Status berhasil diperbarui!")
+        
+        cari_input = str(input("Masukkan ID Transaksi (Misal: TRX-1) atau Nama Pelanggan ketik 'keluar: "))
+        
+        if cari_input == "keluar" or cari_input == "Keluar":
+            return
+            
+        id_ditemukan = ""
+        
+        # 1. Cek apakah yang diinput adalah ID
+        if cari_input in database_laundry:
+            id_ditemukan = cari_input
+        else:
+            # 2. Jika bukan ID, coba cari lewat Nama
+            # Kita lakukan perulangan manual untuk mengecek setiap nama
+            for id_trx in database_laundry:
+                if database_laundry[id_trx]['nama'] == cari_input:
+                    id_ditemukan = id_trx
+        
+        # 3. Proses jika data ditemukan
+        if id_ditemukan != "":
+            print(f"\nID Transaksi    : {id_ditemukan}")
+            print(f"Nama Pelanggan  : {database_laundry[id_ditemukan]['nama']}")
+            print(f"Status Saat Ini : {database_laundry[id_ditemukan]['status']}")
+            print("----------------------------------------")
+            print("Pilih Status Baru:")
+            print("1. Antrean")
+            print("2. Sedang Dicuci")
+            print("3. Siap Diambil")
+            
+            pilihan_status = 0
+            while pilihan_status < 1 or pilihan_status > 3:
+                pilihan_status = int(input("Pilih (1-3): "))
+                if pilihan_status < 1 or pilihan_status > 3:
+                    print("Pilihan status salah! Masukkan angka 1 sampai 3.")
+            
+            # Mengubah status berdasarkan pilihan
+            if pilihan_status == 1:
+                database_laundry[id_ditemukan]['status'] = "Antrean"
+            if pilihan_status == 2:
+                database_laundry[id_ditemukan]['status'] = "Sedang Dicuci"
+            if pilihan_status == 3:
+                database_laundry[id_ditemukan]['status'] = "Siap Diambil"
+                print(f"[NOTIFIKASI] SMS dikirim ke {database_laundry[id_ditemukan]['no_hp']}: Halo {database_laundry[id_ditemukan]['nama']}, cucian Anda dengan ID {id_ditemukan} sudah SIAP DIAMBIL!")
+            
+            print("Status berhasil diperbarui!")
+        else:
+            print("Data tidak ditemukan! Pastikan ID atau Nama (penulisan huruf besar/kecil harus sama).")
+            
         print("----------------------------------------")
         menu_lagi = str(input("Apakah ingin mengecek / mengubah status transaksi lain? (y/n): "))
+    input("Tekan Enter")
+    print("==========================================================================")
+    
 
 # Proses Pembayaran
 def pembayaran_laundry():
@@ -153,39 +177,51 @@ def pembayaran_laundry():
         print("\n========================================")
         print("      PENGAMBILAN & PEMBAYARAN          ")
         print("========================================")
-        id_valid = False
-        while id_valid == False:
-            cari_id = str(input("Masukkan ID Transaksi (misal: TRX-001) atau ketik 'keluar': "))
-            if cari_id == "keluar" or cari_id == "Keluar":
-                return   
-            if cari_id in database_laundry:
-                id_valid = True
-            if cari_id not in database_laundry:
-                print("ID Transaksi tidak ditemukan! Coba cek huruf kapital atau angkanya.")           
-        if database_laundry[cari_id]['status'] == "Selesai/Diambil":
-            print("Transaksi ini sudah selesai dikerjakan dan sudah diambil.")  
-        if database_laundry[cari_id]['status'] == "Antrean" or database_laundry[cari_id]['status'] == "Sedang Dicuci":
-            print(f"Maaf, cucian atas nama {database_laundry[cari_id]['nama']} MASIH DALAM PROSES ({database_laundry[cari_id]['status']}).")
-            print("Pembayaran belum bisa dilakukan sampai status menjadi 'Siap Diambil'.")
-        if database_laundry[cari_id]['status'] == "Siap Diambil":
-            print(f"Nama Pelanggan : {database_laundry[cari_id]['nama']}")
-            print(f"Status Cucian  : {database_laundry[cari_id]['status']}")
-            print(f"Total Tagihan  : Rp. {database_laundry[cari_id]['total_harga']}")
-            tagihan = database_laundry[cari_id]['total_harga']
-            pembayaran_sukses = False
-            while pembayaran_sukses == False:
-                bayar = int(input("Masukkan Jumlah Uang Pembayaran: Rp. "))
-                if bayar >= tagihan:
-                    kembalian = bayar - tagihan
-                    print(f"Kembalian: Rp. {kembalian}")
-                    database_laundry[cari_id]['status'] = "Selesai/Diambil"
-                    database_laundry[cari_id]['pembayaran'] = "Lunas"
-                    print("Transaksi Sukses! Pakaian telah diserahkan.")
-                    pembayaran_sukses = True
-                if bayar < tagihan:
-                    print(f"Maaf, uang yang dibayarkan kurang Rp. {tagihan - bayar}! Coba ulangi.")    
-        print("----------------------------------------")
-        menu_lagi = str(input("Apakah ingin memproses pembayaran nota lain? (y/n): "))
+        cari_input = str(input("Masukkan ID Transaksi (Misal: TRX-1) atau Nama Pelanggan ketik 'keluar: "))
+        
+        if cari_input == "keluar" or cari_input == "Keluar":
+            return
+            
+        id_ditemukan = ""
+        
+        # 1. Cek apakah yang diinput adalah ID
+        if cari_input in database_laundry:
+            id_ditemukan = cari_input
+        else:
+            # 2. Jika bukan ID, coba cari lewat Nama
+            # Kita lakukan perulangan manual untuk mengecek setiap nama
+            for id_trx in database_laundry:
+                if database_laundry[id_trx]['nama'] == cari_input:
+                    id_ditemukan = id_trx  
+        if id_ditemukan != "":  
+            if database_laundry[id_ditemukan]['status'] == "Selesai/Diambil":
+                print("Transaksi ini sudah selesai dikerjakan dan sudah diambil.")  
+            if database_laundry[id_ditemukan]['status'] == "Antrean" or database_laundry[id_ditemukan]['status'] == "Sedang Dicuci":
+                print(f"Maaf, cucian atas nama {database_laundry[id_ditemukan]['nama']} MASIH DALAM PROSES ({database_laundry[id_ditemukan]['status']}).")
+                print("Pembayaran belum bisa dilakukan sampai status menjadi 'Siap Diambil'.")
+            if database_laundry[id_ditemukan]['status'] == "Siap Diambil":
+                print(f"Nama Pelanggan : {database_laundry[id_ditemukan]['nama']}")
+                print(f"Status Cucian  : {database_laundry[id_ditemukan]['status']}")
+                print(f"Total Tagihan  : Rp. {database_laundry[id_ditemukan]['total_harga']}")
+                tagihan = database_laundry[id_ditemukan]['total_harga']
+                pembayaran_sukses = False
+                while pembayaran_sukses == False:
+                    bayar = int(input("Masukkan Jumlah Uang Pembayaran: Rp. "))
+                    if bayar >= tagihan:
+                        kembalian = bayar - tagihan
+                        print(f"Kembalian: Rp. {kembalian}")
+                        database_laundry[id_ditemukan]['status'] = "Selesai/Diambil"
+                        database_laundry[id_ditemukan]['pembayaran'] = "Lunas"
+                        print("Transaksi Sukses! Pakaian telah diserahkan.")
+                        pembayaran_sukses = True
+                    if bayar < tagihan:
+                        print(f"Maaf, uang yang dibayarkan kurang Rp. {tagihan - bayar}! Coba ulangi.")
+            else:
+                print("Data tidak ditemukan! Pastikan ID atau Nama (penulisan huruf besar/kecil harus sama).")    
+            print("----------------------------------------")
+            menu_lagi = str(input("Apakah ingin memproses pembayaran nota lain? (y/n): "))
+    input("Tekan Enter")
+    print("==========================================================================")
 
 # Output Laporan
 def laporan_keuangan():
@@ -223,28 +259,52 @@ def laporan_keuangan():
     print("-" * 90)
     print(f"Jumlah Transaksi Sukses/Selesai Diambil : {baju_sukses} orderan")
     print(f"Total Uang Pendapatan di Laci Kasir     : Rp. {total_pendapatan}")
+    input("Tekan Enter")
     print("==========================================================================")
 
-
+# List Cucian Berdasarkan Status
+def list_cucian():
+    # Kamus Data Lokal:
+    #   status_target : list (untuk menyimpan kategori status)
+    #   status_cek    : string (iterator untuk setiap status)
+    #   ada_data      : boolean (flag untuk pengecekan apakah ada data di kategori tersebut)
+    
+    print("\n========================================")
+    print("      DAFTAR CUCIAN BERDASARKAN STATUS  ")
+    print("========================================")
+    
+    status_target = ["Antrean", "Sedang Dicuci", "Siap Diambil", "Selesai/Diambil"]
+    
+    for status_cek in status_target:
+        print(f"\n--- Status: {status_cek} ---")
+        ada_data = False
+        for id_trx in database_laundry:
+            if database_laundry[id_trx]['status'] == status_cek:
+                print(f"ID: {id_trx} | Nama: {database_laundry[id_trx]['nama']}")
+                ada_data = True
+        
+        if ada_data == False:
+            print("Tidak ada cucian dalam status ini.")
+    input("Tekan Enter")
+    print("========================================")
 # Menu Utama Program
 def main():
     # Kamus Data Lokal:
     #	pilihan_menu : integer (Variabel navigasi memilih menu utama aplikasi 1-5)
-    pilihan_menu = 0
-    while pilihan_menu != 5:
-        print("\n=== APLIKASI MANAGEMEN LAUNDRY ASEK ===")
-        print("1. Penerimaan Laundry Baru (Input Data)")
-        print("2. Cek / Ubah Status Cucian (Monitoring)")
-        print("3. Pengambilan & Pembayaran (Transaksi Selesai)")
-        print("4. Laporan Keuangan Toko (Rekap Data Lengkap)")
-        print("5. Keluar Aplikasi")
+    print("\n=== APLIKASI MANAGEMEN LAUNDRY ASEK ===")
+    print("1. Penerimaan Laundry Baru (Input Data)")
+    print("2. Cek / Ubah Status Cucian (Monitoring)")
+    print("3. Lihat list cucian (Mengecek)")
+    print("4. Pengambilan & Pembayaran (Transaksi Selesai)")
+    print("5. Laporan Keuangan Toko (Rekap Data Lengkap)")
+    print("0. Keluar Aplikasi")
+    pilihan_menu = int(input("Masukkan pilihan menu (1-5): "))
+    while pilihan_menu != 0:
         
-        pilihan_menu = 0
-        while pilihan_menu < 1 or pilihan_menu > 5:
+        while pilihan_menu < 0 or pilihan_menu > 6:
             pilihan_menu = int(input("Masukkan pilihan menu (1-5): "))
-            if pilihan_menu < 1 or pilihan_menu > 5:
-                print("Pilihan menu salah! Gunakan angka 1 sampai 5.")
-                
+            if pilihan_menu < 0 or pilihan_menu > 6:
+                print("Pilihan menu salah! Gunakan angka 1 sampai 5.")      
         print("----------------------------------------")
 
         if pilihan_menu == 1:
@@ -252,10 +312,22 @@ def main():
         if pilihan_menu == 2:
             monitoring_status()
         if pilihan_menu == 3:
-            pembayaran_laundry()
+            
+            list_cucian() 
         if pilihan_menu == 4:
+            
+            pembayaran_laundry()
+        if pilihan_menu == 5: 
             laporan_keuangan()
-
+             
+        print("\n=== APLIKASI MANAGEMEN LAUNDRY ASEK ===")
+        print("1. Penerimaan Laundry Baru (Input Data)")
+        print("2. Cek / Ubah Status Cucian (Monitoring)")
+        print("3. Lihat list cucian (Mengecek)")
+        print("4. Pengambilan & Pembayaran (Transaksi Selesai)")
+        print("5. Laporan Keuangan Toko (Rekap Data Lengkap)")
+        print("0. Keluar Aplikasi")
+        pilihan_menu = int(input("Masukkan pilihan menu (1-5): "))
     print("Terima kasih telah menggunakan aplikasi laundry ASEK!")
     return 0
 
