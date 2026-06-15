@@ -18,6 +18,7 @@ def input_orderan():
     #	menu_lagi        : string (Kontrol perulangan untuk tambah antrean nota baru)
     #	nama             : string (Nama dari pelanggan laundry)
     #	no_hp            : string (Nomor telepon pelanggan laundry)
+    #   hari             : string (Hari pelanggan melakukan transaksi)
     #	total_harga      : real/float (Akumulasi total tagihan dalam satu nota)
     #	tambah_layanan   : string (Kontrol perulangan untuk tambah layanan per pelanggan)
     #	pilihan_layanan  : integer (Menu pilihan kategori jenis layanan 1-4)
@@ -28,12 +29,14 @@ def input_orderan():
     #	id_transaksi     : string (ID unik penanda transaksi, contoh: TRX-001)
     global urutan
     menu_lagi = "y"
+    diskon_hari = 0
     while menu_lagi == "y" or menu_lagi == "Y":
         print("\n========================================")
         print("     PENERIMAAN LAUNDRY BARU (INPUT)    ")
         print("========================================")
         nama = str(input("Masukkan Nama: "))
         no_hp = str(input("Masukkan Nomor Telepon: "))
+        hari = str(input("Masukkan hari pencucian: "))
         total_harga = 0
         tambah_layanan = "y"
         while tambah_layanan == "y" or tambah_layanan == "Y":
@@ -83,18 +86,64 @@ def input_orderan():
         urutan += 1
         database_laundry[id_transaksi] = {
             "nama": nama,
+            "hari": hari,
             "no_hp": no_hp,
             "total_harga": total_harga,
             "status": "Antrean",
             "pembayaran": "Belum Bayar",
         }
+        kode_diskon = str(input("Apakah anda memiliki kode diskon? (Jika tidak = ""tdk punya""): "))
+        total_harga_akhir, diskon_terbesar = fitur_diskon(hari, total_harga, kode_diskon)
         print("----------------------------------------")
         print(f"Sukses! Orderan disimpan dengan ID: {id_transaksi}")
-        print(f"Total Gabungan Tagihan: Rp. {total_harga}")
+        print(f"Total Gabungan Tagihan dengan diskon {diskon_terbesar}%: Rp. {total_harga_akhir}")
         print("----------------------------------------")
         menu_lagi = str(input("Apakah ingin menginput orderan baru yang lain? (y/n): "))
     input("Tekan Enter")
     print("==========================================================================")
+    return hari, total_harga, kode_diskon
+
+# Fitur Diskon
+    # Kamus data lokal
+    #   diskon_hari = integer (Menggunakan hari sebagai acuan diskon dan menampung nilai diskon hari)
+    #   diskon_loyalitas = integer (Menggunakan total_harga sebagai acuan diskon dan menampung nilai diskon loyalitas)
+    #   diskon_kode = string (Menggunakan kode_diskon sebagai acuan diskon dan menampung nilai diskon kode)
+    #   diskon_terbesar = integer (Menampung maks diskon dan untuk mengambil nilai terbesar dari banyak diskon)
+    #   potongan = integer (Menampung nilai total harga setelah dibagi dengan nilai diskon)
+    #   total_harga_akhir = integer (Total harga akhir setelah dikurangi diskon terbesar)
+
+def fitur_diskon(hari, total_harga, kode_diskon):
+    diskon_hari = 0
+    diskon_loyalitas = 0
+    diskon_kode = 0
+    
+    if hari == 'Senin' or 'senin' :
+        diskon_hari = 10
+    elif hari == 'Selasa' or 'selasa' :
+        diskon_hari = 5
+
+    if total_harga >= 200000 :
+        diskon_loyalitas = 20
+    elif total_harga >= 500000 :
+        diskon_loyalitas = 40
+
+    if kode_diskon == 'Ambalabu' :
+        diskon_kode = 5
+    elif kode_diskon == 'Khresna' :
+        diskon_kode = 10
+    else:
+        diskon_kode = 0
+
+    diskon_terbesar = diskon_hari
+    if diskon_loyalitas > diskon_terbesar :
+        diskon_terbesar = diskon_loyalitas
+    elif diskon_kode > diskon_terbesar :
+        diskon_terbesar = diskon_kode
+    
+    potongan = (total_harga * diskon_terbesar) // 100
+    total_harga_akhir = total_harga - potongan
+    return total_harga_akhir, diskon_terbesar
+
 
 # Mengubah Status
 def monitoring_status():
@@ -246,11 +295,12 @@ def laporan_keuangan():
     for id_trx in database_laundry:
         nama_cust = database_laundry[id_trx]['nama']
         no_hp_cust = database_laundry[id_trx]['no_hp']
+        hari_cust = database_laundry[id_trx]['hari']
         harga_cust = database_laundry[id_trx]['total_harga']
         status_cuci = database_laundry[id_trx]['status']
         status_bayar = database_laundry[id_trx]['pembayaran']
         
-        print(f"{id_trx:<10} | {nama_cust:<18} | {no_hp_cust:<14} | Rp.{harga_cust:<9} | {status_cuci:<15} | {status_bayar:<10}")
+        print(f"{id_trx:<10} | {nama_cust:<18} | {no_hp_cust:<14} | Hari {hari_cust} | Rp.{harga_cust:<9} | {status_cuci:<15} | {status_bayar:<10}")
         
         if status_bayar == "Lunas":
             total_pendapatan += harga_cust
@@ -287,6 +337,7 @@ def list_cucian():
             print("Tidak ada cucian dalam status ini.")
     input("Tekan Enter")
     print("========================================")
+
 # Menu Utama Program
 def main():
     # Kamus Data Lokal:
@@ -312,11 +363,10 @@ def main():
         if pilihan_menu == 2:
             monitoring_status()
         if pilihan_menu == 3:
-            
             list_cucian() 
         if pilihan_menu == 4:
-            
             pembayaran_laundry()
+            fitur_diskon()
         if pilihan_menu == 5: 
             laporan_keuangan()
              
