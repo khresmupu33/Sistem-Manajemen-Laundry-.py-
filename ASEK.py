@@ -82,18 +82,23 @@ def input_orderan():
                 banyakpcs = int(input("Berapa Banyak (Pcs): "))
                 total_harga += (banyakpcs * harga)
             tambah_layanan = str(input("Mau tambah layanan lain untuk pelanggan ini? (y/n): "))
-        id_transaksi = f"TRX-{000+urutan}"
+        
+        # supaya hasil atau nama ticketnya TRX-001
+        id_transaksi = f"TRX-{urutan:03d}"
         urutan += 1
+        
+        kode_diskon = str(input("Apakah anda memiliki kode diskon? (Jika tidak = \"tdk punya\"): "))
+        total_harga_akhir, diskon_terbesar = fitur_diskon(hari, total_harga, kode_diskon)
+        
         database_laundry[id_transaksi] = {
             "nama": nama,
             "hari": hari,
             "no_hp": no_hp,
-            "total_harga": total_harga,
+            "total_harga": total_harga_akhir,
             "status": "Antrean",
             "pembayaran": "Belum Bayar",
         }
-        kode_diskon = str(input("Apakah anda memiliki kode diskon? (Jika tidak = ""tdk punya""): "))
-        total_harga_akhir, diskon_terbesar = fitur_diskon(hari, total_harga, kode_diskon)
+        
         print("----------------------------------------")
         print(f"Sukses! Orderan disimpan dengan ID: {id_transaksi}")
         print(f"Total Gabungan Tagihan dengan diskon {diskon_terbesar}%: Rp. {total_harga_akhir}")
@@ -101,7 +106,6 @@ def input_orderan():
         menu_lagi = str(input("Apakah ingin menginput orderan baru yang lain? (y/n): "))
     input("Tekan Enter")
     print("==========================================================================")
-    return hari, total_harga, kode_diskon
 
 # Fitur Diskon
     # Kamus data lokal
@@ -117,9 +121,9 @@ def fitur_diskon(hari, total_harga, kode_diskon):
     diskon_loyalitas = 0
     diskon_kode = 0
     
-    if hari == 'Senin' or 'senin' :
+    if hari == 'Senin' or hari == 'senin' :
         diskon_hari = 10
-    elif hari == 'Selasa' or 'selasa' :
+    elif hari == 'Selasa' or hari == 'selasa' :
         diskon_hari = 5
 
     if total_harga >= 200000 :
@@ -158,24 +162,20 @@ def monitoring_status():
         print("    CEK / UBAH STATUS CUCIAN (MONITOR)  ")
         print("========================================")
         
-        cari_input = str(input("Masukkan ID Transaksi (Misal: TRX-1) atau Nama Pelanggan ketik 'keluar: "))
+        cari_input = str(input("Masukkan ID Transaksi (Misal: TRX-1) atau Nama Pelanggan atau ketik 'keluar': "))
         
-        if cari_input == "keluar" or cari_input == "Keluar":
+        if cari_input == "keluar" or cari_input == "Keluar" or cari_input=="KELUAR":
             return
             
         id_ditemukan = ""
         
-        # 1. Cek apakah yang diinput adalah ID
         if cari_input in database_laundry:
             id_ditemukan = cari_input
         else:
-            # 2. Jika bukan ID, coba cari lewat Nama
-            # Kita lakukan perulangan manual untuk mengecek setiap nama
             for id_trx in database_laundry:
                 if database_laundry[id_trx]['nama'] == cari_input:
                     id_ditemukan = id_trx
         
-        # 3. Proses jika data ditemukan
         if id_ditemukan != "":
             print(f"\nID Transaksi    : {id_ditemukan}")
             print(f"Nama Pelanggan  : {database_laundry[id_ditemukan]['nama']}")
@@ -192,7 +192,6 @@ def monitoring_status():
                 if pilihan_status < 1 or pilihan_status > 3:
                     print("Pilihan status salah! Masukkan angka 1 sampai 3.")
             
-            # Mengubah status berdasarkan pilihan
             if pilihan_status == 1:
                 database_laundry[id_ditemukan]['status'] = "Antrean"
             if pilihan_status == 2:
@@ -226,19 +225,16 @@ def pembayaran_laundry():
         print("\n========================================")
         print("      PENGAMBILAN & PEMBAYARAN          ")
         print("========================================")
-        cari_input = str(input("Masukkan ID Transaksi (Misal: TRX-1) atau Nama Pelanggan ketik 'keluar: "))
+        cari_input = str(input("Masukkan ID Transaksi (Misal: TRX-1) atau Nama Pelanggan atau ketik 'keluar': "))
         
-        if cari_input == "keluar" or cari_input == "Keluar":
+        if cari_input == "keluar" or cari_input == "Keluar" or cari_input == "KELUAR":
             return
             
         id_ditemukan = ""
         
-        # 1. Cek apakah yang diinput adalah ID
         if cari_input in database_laundry:
             id_ditemukan = cari_input
         else:
-            # 2. Jika bukan ID, coba cari lewat Nama
-            # Kita lakukan perulangan manual untuk mengecek setiap nama
             for id_trx in database_laundry:
                 if database_laundry[id_trx]['nama'] == cari_input:
                     id_ditemukan = id_trx  
@@ -265,12 +261,71 @@ def pembayaran_laundry():
                         pembayaran_sukses = True
                     if bayar < tagihan:
                         print(f"Maaf, uang yang dibayarkan kurang Rp. {tagihan - bayar}! Coba ulangi.")
-            else:
-                print("Data tidak ditemukan! Pastikan ID atau Nama (penulisan huruf besar/kecil harus sama).")    
-            print("----------------------------------------")
-            menu_lagi = str(input("Apakah ingin memproses pembayaran nota lain? (y/n): "))
+        else:
+            print("Data tidak ditemukan! Pastikan ID atau Nama (penulisan huruf besar/kecil harus sama).")   
+
+        print("----------------------------------------")
+        menu_lagi = str(input("Apakah ingin memproses pembayaran nota lain? (y/n): "))
     input("Tekan Enter")
     print("==========================================================================")
+
+def hapus_orderan():
+# Kamus Data Lokal:
+    #   menu_lagi       : string (Kontrol perulangan while untuk mencopot nota orderan lain)
+    #   cari_input      : string (Menampung kata kunci ID Transaksi atau Nama Pelanggan yang dicari)
+    #   id_ditemukan    : string (Penyimpan ID Transaksi yang valid setelah berhasil dicocokkan)
+    #   id_trx          : string (Variabel untuk menelusuri key ID Transaksi di database)
+    #   konfirmasi      : string (Menampung input persetujuan yakin atau tidak untuk menghapus data)
+
+    # Fungsi dan Perintah "baru" yang Digunakan untuk mempermudah dan memperpendek fungsi:
+    #   .lower()        : Method string untuk mengubah semua huruf dalam string menjadi huruf kecil (case-insensitive)
+    #   .upper()        : Method string untuk mengubah semua huruf dalam string menjadi huruf besar (case-insensitive)
+    # lower dan upper di atas mencegah misinput karena huruf kecil/kapital
+    #   del             : Keyword Python untuk menghapus objek atau elemen/key tertentu dari dalam dictionary secara permanen
+    menu_lagi = "y"
+    while menu_lagi.lower() == "y":
+        print("\n========================================")
+        print("     PEMBATALAN / COPOT ORDERAN         ")
+        print("========================================")
+        
+        cari_input = str(input("Masukkan ID Transaksi atau Nama Pelanggan (ketik 'keluar' untuk kembali): "))
+        
+        if cari_input.lower() == "keluar":
+            print(f"Kembali ke menu utama.")
+            return
+            
+        id_ditemukan = ""
+        
+        if cari_input.upper() in database_laundry:
+            id_ditemukan = cari_input.upper()
+        else:
+            for id_trx in database_laundry:
+                if database_laundry[id_trx]['nama'].lower() == cari_input.lower():
+                    id_ditemukan = id_trx
+                    break 
+        
+        if id_ditemukan != "":
+            print(f"\nData Ditemukan:")
+            print(f"ID Transaksi    : {id_ditemukan}")
+            print(f"Nama Pelanggan  : {database_laundry[id_ditemukan]['nama']}")
+            print(f"Total Tagihan   : Rp. {database_laundry[id_ditemukan]['total_harga']}")
+            print(f"Status Cucian   : {database_laundry[id_ditemukan]['status']}")
+            print("----------------------------------------")
+            
+            konfirmasi = input(f"Apakah Anda yakin ingin MENGHAPUS orderan {id_ditemukan}? (y/n): ")
+            if konfirmasi.lower() == "y":
+                del database_laundry[id_ditemukan]
+                print(f"Sukses! Orderan {id_ditemukan} telah dicopot/dihapus dari sistem.")
+            else:
+                print("Penghapusan dibatalkan.")
+        else:
+            print("Data tidak ditemukan! Pastikan ID atau Nama sudah benar.")
+            
+        print("----------------------------------------")
+        menu_lagi = str(input("Apakah ingin mencopot orderan lain? (y/n): "))
+        while menu_lagi.lower() != "y" and menu_lagi.lower() != "n":
+            menu_lagi = str(input("Apakah ingin mencopot orderan lain? (y/n): "))
+
 
 # Output Laporan
 def laporan_keuangan():
@@ -341,43 +396,42 @@ def list_cucian():
 # Menu Utama Program
 def main():
     # Kamus Data Lokal:
-    #	pilihan_menu : integer (Variabel navigasi memilih menu utama aplikasi 1-5)
-    print("\n=== APLIKASI MANAGEMEN LAUNDRY ASEK ===")
-    print("1. Penerimaan Laundry Baru (Input Data)")
-    print("2. Cek / Ubah Status Cucian (Monitoring)")
-    print("3. Lihat list cucian (Mengecek)")
-    print("4. Pengambilan & Pembayaran (Transaksi Selesai)")
-    print("5. Laporan Keuangan Toko (Rekap Data Lengkap)")
-    print("0. Keluar Aplikasi")
-    pilihan_menu = int(input("Masukkan pilihan menu (1-5): "))
+    # pilihan_menu : integer (Variabel navigasi memilih menu utama aplikasi 0-6)
+    
+    pilihan_menu = -1
     while pilihan_menu != 0:
-        
-        while pilihan_menu < 0 or pilihan_menu > 6:
-            pilihan_menu = int(input("Masukkan pilihan menu (1-5): "))
-            if pilihan_menu < 0 or pilihan_menu > 6:
-                print("Pilihan menu salah! Gunakan angka 1 sampai 5.")      
-        print("----------------------------------------")
-
-        if pilihan_menu == 1:
-            input_orderan()
-        if pilihan_menu == 2:
-            monitoring_status()
-        if pilihan_menu == 3:
-            list_cucian() 
-        if pilihan_menu == 4:
-            pembayaran_laundry()
-            fitur_diskon()
-        if pilihan_menu == 5: 
-            laporan_keuangan()
-             
         print("\n=== APLIKASI MANAGEMEN LAUNDRY ASEK ===")
         print("1. Penerimaan Laundry Baru (Input Data)")
         print("2. Cek / Ubah Status Cucian (Monitoring)")
         print("3. Lihat list cucian (Mengecek)")
         print("4. Pengambilan & Pembayaran (Transaksi Selesai)")
         print("5. Laporan Keuangan Toko (Rekap Data Lengkap)")
+        print("6. Copot / Batalkan Orderan (Hapus Data)")
         print("0. Keluar Aplikasi")
-        pilihan_menu = int(input("Masukkan pilihan menu (1-5): "))
+        
+        try:
+            pilihan_menu = int(input("Masukkan pilihan menu (0-6): "))
+            
+            if pilihan_menu < 0 or pilihan_menu > 6:
+                print("Pilihan menu salah! Gunakan angka 0 sampai 6.")
+            else:
+                print("----------------------------------------")
+                if pilihan_menu == 1:
+                    input_orderan()
+                elif pilihan_menu == 2:
+                    monitoring_status()
+                elif pilihan_menu == 3:
+                    list_cucian() 
+                elif pilihan_menu == 4:
+                    pembayaran_laundry()
+                elif pilihan_menu == 5: 
+                    laporan_keuangan()
+                elif pilihan_menu == 6:
+                    hapus_orderan()
+        except ValueError:
+            print("Pilihan menu harus berupa angka! Silakan coba lagi.")
+            pilihan_menu = -1 
+            # (biar loop tetep berjalan ke atas)
     print("Terima kasih telah menggunakan aplikasi laundry ASEK!")
     return 0
 
